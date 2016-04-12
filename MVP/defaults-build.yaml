@@ -1,0 +1,21 @@
+- defaults:
+    name: defaults-build
+    node: 'jslave-platform-rhel7'
+    wrappers:
+        - ansicolor
+        - workspace-cleanup
+        - timestamps
+        - build-name:
+            name: ${{ENV,var="name"}}-${{ENV,var="version"}}-${{ENV,var="release"}}
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml'
+            allow-empty: 'true'
+        - junit:
+            results: 'J:*.xml'
+        - email-ext:
+            recipients: ${{OWNERSHIP,var="JOB_COOWNERS_EMAILS"}}
+            always: true
+            failure: false
+            send-to:
+                - recipients

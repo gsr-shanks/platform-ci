@@ -1,0 +1,25 @@
+- job-template:
+    name: '{name}-{component}'
+    defaults: defaults-build
+    #node: 'jslave-of-your-own'
+    properties:
+        - ownership:
+            owner: your_ID
+    triggers:
+        - ci-trigger:
+            jms-selector: "name = '{component}' AND CI_TYPE = 'brew-tag' AND (tag LIKE 'RHEL-%-candidate' OR tag LIKE 'rhel-%-candidate')"
+    builders:
+        - shell: |
+            #!/bin/bash -x
+            # Here goes your shell commands for submitting beaker job here, and save the job ID into env var BKR_JOBID. E.g:
+            bkr job-submit $YOUR_TEST_xml | tee $WORKSPACE/bkr_job.txt
+            BKR_JOBID=`cut -d\' -f2 $WORKSPACE/bkr_job.txt`
+
+            bkr job-watch $BKR_JOBID
+            bkr job-results --format junit-xml $BKR_JOBID > $WORKSPACE/$BKR_JOBID.xml
+
+- project:
+    name: Platform-CI-MVP
+    component: sample
+    jobs:
+      - '{name}-{component}'
