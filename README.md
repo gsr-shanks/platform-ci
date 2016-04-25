@@ -1,25 +1,20 @@
-# Welcome to Platform-CI GitHub
+# Welcome to Platform-CI Repository
 
 Hi! Nice to see you here!
 
+## QUESTION/BUG/RFE ?
 
-## QUESTIONS ?
+Please see the [community page](https://docs.engineering.redhat.com/x/P7l8Ag) for information on how to ask questions on the mailing list and IRC.
 
-Please see the [community page](https://docs.engineering.redhat.com/pages/viewpage.action?pageId=41728319) for information on how to ask questions on the mailing list and IRC.
+You can report bugs or make enhancement requests at the [Platform-CI GitHub issue page](https://github.com/RHQE/platform-ci/issues/new) by filling out the issue template that will be presented.
 
-The GitHub issue tracker is not the best place for questions for various reasons, but both IRC and the mailing list are very helpful places for those things, as the community page explains best.
+The GitHub issue tracker may not be the best choice for questions - both IRC and the mailing list are very helpful places for those things, as the community page explains best.
 
 
 ## CONTRIBUTING ?
 
-Please see the [community page](https://docs.engineering.redhat.com/pages/viewpage.action?pageId=41728319) for information regarding the contribution process. Important license agreement information is also included on that page.
+You may already be familiar with [using pull requests](https://help.github.com/articles/creating-a-pull-request/) to collaborate on Github projects. Same idea applies here.
 
-
-## BUG TO REPORT ?
-
-First and foremost, also check the [community page](https://docs.engineering.redhat.com/pages/viewpage.action?pageId=41728319).
-
-You can report bugs or make enhancement requests at the [Platform-CI GitHub issue page](https://github.com/RHQE/platform-ci/issues/new) by filling out the issue template that will be presented.
-
+Please check out the [community page](https://docs.engineering.redhat.com/x/P7l8Ag) for information regarding the contribution process details.
 
 Thanks!
