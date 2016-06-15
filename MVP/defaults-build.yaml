@@ -1,6 +1,23 @@
 - defaults:
     name: defaults-build
     node: 'jslave-platform-rhel7'
+    parameters:
+        - string:
+            name: id
+        - string:
+            name: task_id
+        - string:
+            name: CI_TYPE
+        - string:
+            name: CI_MESSAGE
+        - string:
+            name: tag
+        - string:
+            name: name
+        - string:
+            name: version
+        - string:
+            name: release
     wrappers:
         - ansicolor
         - workspace-cleanup
