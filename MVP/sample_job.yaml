@@ -1,5 +1,5 @@
 - job-template:
-    name: '{name}-{component}'
+    name: '{component}-{name}'
     defaults: defaults-build
     #node: 'jslave-of-your-own'
     properties:
@@ -14,7 +14,8 @@
             # Here goes your shell commands for submitting beaker job here, and save the job ID into env var BKR_JOBID. E.g:
             bkr job-submit $YOUR_TEST_xml | tee $WORKSPACE/bkr_job.txt
             BKR_JOBID=`cut -d\' -f2 $WORKSPACE/bkr_job.txt`
-            echo "BKR_JOBID=$BKR_JOBID" > $WORKSPACE/job.properties
+            echo BKR_JOBID=$BKR_JOBID > $WORKSPACE/job.properties
+            echo BKR_JOBID_NUM=${{BKR_JOBID//J:/}} >> $WORKSPACE/job.properties
         - inject:
             # Saving the Beaker job IDs to file job.properties
             properties-file: $WORKSPACE/job.properties
@@ -28,4 +29,4 @@
     name: Platform-CI-MVP
     component: sample
     jobs:
-      - '{name}-{component}'
+      - '{component}-{name}'
