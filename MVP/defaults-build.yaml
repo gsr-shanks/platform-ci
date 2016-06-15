@@ -8,8 +8,16 @@
         - build-name:
             name: ${{ENV,var="name"}}-${{ENV,var="version"}}-${{ENV,var="release"}}
     publishers:
+        - postbuildscript:
+            script-only-if-succeeded: False
+            script-only-if-failed: True
+            builders:
+              - shell: |
+                  #!/bin/bash
+                  echo "Jenkins job failed or canceled - canceling any submitted Beaker jobs"
+                  bkr job-cancel ${{BKR_JOBID}}
         - archive:
-            artifacts: '*.txt, *.xml'
+            artifacts: '*.txt, *.xml, *.properties'
             allow-empty: 'true'
         - junit:
             results: 'J:*.xml'
