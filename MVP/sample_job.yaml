@@ -1,5 +1,5 @@
 - job-template:
-    name: '{name}-{component}'
+    name: '{component}-{name}'
     defaults: defaults-build
     #node: 'jslave-of-your-own'
     properties:
@@ -7,14 +7,26 @@
             owner: your_ID
     triggers:
         - ci-trigger:
-            jms-selector: "name = '{component}' AND CI_TYPE = 'brew-tag' AND (tag LIKE 'RHEL-%-candidate' OR tag LIKE 'rhel-%-candidate')"
+            # Job trigger for only official builds in brew
+            jms-selector: "name = '{component}' AND CI_TYPE = 'brew-tag' AND tag LIKE '%-candidate'"
+
+            # Job trigger for only scratch builds in brew
+            #jms-selector: "name = '{component}' AND CI_TYPE = 'brew-taskstatechange' AND scratch = true"
+
+            # Job trigger for all builds in brew (use with caution)
+            #jms-selector: "name = '{component}' AND CI_TYPE = 'brew-taskstatechange'"
+
+            # Job trigger for stable compose that passed RTT validation
+            #jms-selector: "CI_NAME='rtt-accepted-publisher'"
     builders:
         - shell: |
             #!/bin/bash -x
             # Here goes your shell commands for submitting beaker job here, and save the job ID into env var BKR_JOBID. E.g:
             bkr job-submit $YOUR_TEST_xml | tee $WORKSPACE/bkr_job.txt
             BKR_JOBID=`cut -d\' -f2 $WORKSPACE/bkr_job.txt`
-            echo "BKR_JOBID=$BKR_JOBID" > $WORKSPACE/job.properties
+            echo BKR_JOBID=$BKR_JOBID > $WORKSPACE/job.properties
+            BKR_JOBID_NUM=`echo ${{BKR_JOBID//J:/}}`
+            echo BKR_JOBID_NUM=${{BKR_JOBID_NUM// /+}} >> $WORKSPACE/job.properties
         - inject:
             # Saving the Beaker job IDs to file job.properties
             properties-file: $WORKSPACE/job.properties
@@ -22,10 +34,12 @@
             #!/bin/bash -x
             # Here goes the shell command to watch your Beaker jobs and format results on completion
             bkr job-watch $BKR_JOBID
-            bkr job-results --format junit-xml $BKR_JOBID > $WORKSPACE/$BKR_JOBID.xml
+            for jobid in $BKR_JOBID; do
+              bkr job-results --format junit-xml $jobid > $WORKSPACE/$jobid.xml
+            done
 
 - project:
     name: Platform-CI-MVP
     component: sample
     jobs:
-      - '{name}-{component}'
+      - '{component}-{name}'
