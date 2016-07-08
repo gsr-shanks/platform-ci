@@ -17,9 +17,9 @@
 # Common code used in the bash Jenkins job build phases
 
 log_header(){
-    echo
-    echo "======================== $1 ================================="
-    echo
+  echo
+  echo "======================== $1 ================================="
+  echo
 }
 
 jenkins_cli(){
@@ -35,8 +35,8 @@ jenkins_cli(){
 # Check if the supplied name is a valid component name, by checking if
 # it has a valid dist-git entry.
 component_sane(){
-	echo "Checking if $1 is a valid parameter name"
-	if [ -n "$BOP_DIST_GIT_URL" ]; then
+  echo "Checking if $1 is a valid parameter name"
+  if [ -n "$BOP_DIST_GIT_URL" ]; then
     echo "Looking at $BOP_DIST_GIT_URL/$1"
     git ls-remote "$BOP_DIST_GIT_URL/$1" >/dev/null
     return $?
