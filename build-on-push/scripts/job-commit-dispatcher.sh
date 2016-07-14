@@ -54,5 +54,5 @@ set_current_build_display_name "$SHORT_GIT_BRANCH:$SHORT_GIT_COMMIT"
 
 log_header "Triggering build job"
 
-ci_commit run "$COMPONENT" "$SHORT_GIT_BRANCH" "platform-ci/build-on-push/jjb" "$SLAVE" "$PLATFORM_CI_REPO" \
-    "$PLATFORM_CI_BRANCH" --commit-hash="$SHORT_GIT_COMMIT" --commit-description="$COMMIT_DESCRIPTION"
+ci_commit run "$COMPONENT" "$SHORT_GIT_BRANCH" "$BOP_HOME/jjb" "$SLAVE" "$PLATFORM_CI_REPO" "$PLATFORM_CI_BRANCH" \
+    --commit-hash="$SHORT_GIT_COMMIT" --commit-description="$COMMIT_DESCRIPTION"
