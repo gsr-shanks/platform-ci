@@ -171,7 +171,7 @@ class PlatformJenkinsJavaCLI(PlatformJenkins):
         """Create a given job on Jenkins.
 
         Raises:
-            PlatformJenkinsException: Disabling the job failed: either the job
+            PlatformJenkinsException: Creating the job failed: either the job
                 exists already, or there was some communication error.
         """
         call = subprocess.Popen(self.cli + [PlatformJenkinsJavaCLI.CREATE_JOB, job.name], stdin=subprocess.PIPE)

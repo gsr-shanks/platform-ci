@@ -76,7 +76,7 @@
     github-user: 'RHQE'
 
 # Template for testing instances of the component setup job
-# The job needs to have a different name that other component setup jobs
+# The job needs to have a different name than other component setup jobs
 
 #- job-template:
 #    name: 'platform-component-setup-testing'

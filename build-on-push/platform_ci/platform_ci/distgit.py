@@ -92,14 +92,15 @@ class DistGitBranch(object):
     def type(self):
         """Returns a type of the branch.
 
-        There are four branch types: official, staging, private, and private staging.
-        The type is determined from the branch name. A staging branch is named as a
-        standard branch with '-staging' suffix. A private staging branch is a well-named
-        private branch (with private- prefix) containing a name of a staging branch inside.
-        Any other name is considered to be private branch.
+        There are four branch types: standard, staging, private, and private staging.
+        The type is determined from the branch name. A standard branch is a RCM-owned
+        branch, usually matching a product version and with ACL enabled. A staging
+        branch is named as a standard branch with '-staging' suffix. A private staging
+        branch is a well-named private branch (with private- prefix) containing a name
+        of a staging branch inside. Any other name is considered to be a private branch.
 
         Examples:
-            official: rhel-6.8
+            standard: rhel-6.8
             staging: rhel-6.8-staging
             private staging: private-<anything->rhel-6.8-staging<-anything>
             private: john-feature-branch-bz123321
