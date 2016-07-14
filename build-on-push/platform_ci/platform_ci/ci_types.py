@@ -219,7 +219,7 @@ class CommitCI(PlatformCI):
         self._run_on_targets(branch.name, config.targets, slave, platform_ci_source)
         return config.targets
 
-    def consider_build(self, commit, slave, platform_ci_source, config):
+    def consider_build(self, commit, slave, platform_ci_source, config_file):
         """Trigger a worker job for a branch, depending on the branch type.
 
         Trigger a worker job either if branch is a staging branch or a private
@@ -232,17 +232,17 @@ class CommitCI(PlatformCI):
             slave: A slave name on which the worker job should be executed
             platform_ci_source: A PlatformCISource instance describing the repo
                 from which the code will be fetched inside the worker job.
-            config_file: A path to a config file inside a dist-git branch.
+            config_file: A path to a config file inside a dist-git branch, or None
         """
 
         branch = commit.branch
 
         if branch.is_staging():
             logging.info("Branch [%s] should be built: it is a staging branch", branch.name)
-            built_targets = self._run_on_staging(branch, slave, platform_ci_source, config)
-        elif config is not None:
+            built_targets = self._run_on_staging(branch, slave, platform_ci_source, config_file)
+        elif config_file is not None:
             logging.info("Branch [%s] should be built: it contains a 'ci.yaml' file", branch.name)
-            built_targets = self._run_by_config(branch, slave, platform_ci_source, config)
+            built_targets = self._run_by_config(branch, slave, platform_ci_source, config_file)
         else:
             logging.warning("Branch [%s] is not a staging branch and 'ci.yaml' file was not found", branch.name)
             logging.warning("Branch [%s] should not be built", branch.name)

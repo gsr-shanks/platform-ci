@@ -52,19 +52,7 @@ echo "Platform CI branch:     $PLATFORM_CI_BRANCH"
 set_current_build_description "branch=$SHORT_GIT_BRANCH commit=$SHORT_GIT_COMMIT<br/>$COMMIT_DESCRIPTION_HTML"
 set_current_build_display_name "$SHORT_GIT_BRANCH:$SHORT_GIT_COMMIT"
 
-log_header "Checking ci.yaml file"
-
-if [ ! -e "$COMPONENT/ci.yaml" ]
-then
-  echo "File 'ci.yaml' not found"
-  CONFIG_FILE_PARAM=""
-else
-  echo "File 'ci.yaml' found"
-  CONFIG_FILE_PARAM="--config=$COMPONENT/ci.yaml"
-fi
-
 log_header "Triggering build job"
 
-eval ci_commit run "$COMPONENT" "$SHORT_GIT_BRANCH" "platform-ci/build-on-push/jjb" "$SLAVE" "$PLATFORM_CI_REPO" \
-    "$PLATFORM_CI_BRANCH" "$CONFIG_FILE_PARAM" --commit-hash="$SHORT_GIT_COMMIT" \
-    --commit-description="$COMMIT_DESCRIPTION"
+ci_commit run "$COMPONENT" "$SHORT_GIT_BRANCH" "platform-ci/build-on-push/jjb" "$SLAVE" "$PLATFORM_CI_REPO" \
+    "$PLATFORM_CI_BRANCH" --commit-hash="$SHORT_GIT_COMMIT" --commit-description="$COMMIT_DESCRIPTION"

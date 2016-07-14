@@ -90,17 +90,26 @@ def run(args):
             from which the created builds will fetch support code.
         args.platform_ci_repo: A GitHub user whose Platform CI fort
             will be used to getch the support code.
-        args.config: A path of the config file, if present in the branch.
+        args.config: A name of a file that is searched in a branch. If such file
+            is present in a branch, the branch will be built as if it were
+            a staging branch.
     """
 
     logging.info("Building scratch build on branch [%s] of component [%s]", args.branch, args.component)
     jenkins_url = os.environ["JENKINS_URL"]
 
+    config_file_path = os.path.join(args.component, args.config)
+
+    if os.path.isfile(config_file_path):
+        config_file = config_file_path
+    else:
+        config_file = None
+
     platform_ci_source = PlatformCISource(args.platform_ci_repo, args.platform_ci_branch)
     commit = DistGitCommit(args.commit_hash, args.branch, args.commit_description)
 
     commit_ci = CommitCI(PlatformJenkins.get_jenkins(jenkins_url, args.templates), args.component)
-    commit_ci.consider_build(commit, args.slave, platform_ci_source, args.config)
+    commit_ci.consider_build(commit, args.slave, platform_ci_source, config_file)
 
 
 def build(args):
@@ -212,7 +221,7 @@ def main():
     parser_run.add_argument("slave", metavar="SLAVE")
     parser_run.add_argument("platform_ci_repo", metavar="GITHUB_USER", default="RHQE")
     parser_run.add_argument("platform_ci_branch", metavar="BRANCH", default="master")
-    parser_run.add_argument("--config", dest="config", metavar="FILE", default=None)
+    parser_run.add_argument("--config", dest="config", metavar="FILE", default="ci.yaml")
     parser_run.add_argument("--commit-hash", dest="commit_hash", default=None)
     parser_run.add_argument("--commit-description", dest="commit_description", default=None)
     parser_run.set_defaults(func=run)
