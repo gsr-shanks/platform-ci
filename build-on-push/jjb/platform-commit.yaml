@@ -66,6 +66,8 @@
             export PYTHONPATH="$PYTHONPATH:platform-ci/build-on-push/platform_ci"
 
             job-commit-dispatcher.sh "{component}" "$GIT_BRANCH" "{github-user}" "{platform-ci-branch}"
+    wrappers:
+        - default-ci-workflow-wrappers
 
 - job-template:
     name: 'ci-{component}-dispatcher-commit'
@@ -129,6 +131,8 @@
             export PYTHONPATH="$PYTHONPATH:platform-ci/build-on-push/platform_ci"
 
             job-commit-worker.sh "{component}" "{git-branch}"
+    wrappers:
+        - default-ci-workflow-wrappers
     publishers:
         - archive:
             artifacts: '*.log, *.txt'
