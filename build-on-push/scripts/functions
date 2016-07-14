@@ -54,3 +54,12 @@ set_current_build_description(){
     echo "Probably not running in a Jenkins build. Build description cannot be updated" >&2
   fi
 }
+
+set_current_build_display_name() {
+  if [ -n "$JOB_NAME" ] && [ -n "$BUILD_NUMBER" ]
+  then
+    jenkins_cli set-build-display-name "$JOB_NAME" "$BUILD_NUMBER" "$1"
+  else
+    echo "Probably not running in a Jenkins build. Build display name cannot be updated" >&2
+  fi
+}
