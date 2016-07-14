@@ -19,7 +19,7 @@ from mock import MagicMock, patch
 from nose.tools import assert_raises
 
 from platform_ci.distgit import DistGitBranch, DistGitBranchException
-from platform_ci.ci_types import CommitCI, CommitCIConfig
+from platform_ci.ci_types import CommitCI, CommitCIConfig, PlatformCISource
 
 
 # pylint: disable=no-member,wrong-import-position,wrong-import-order
@@ -63,6 +63,7 @@ class CommitCITest(unittest.TestCase):
     TEST_SLAVE = "team-slave"
     TEST_PLATFORM_CI_BRANCH = "test-branch"
     TEST_GITHUB_USER = "RHQE"
+    TEST_PLATFORM_CODE_SOURCE = PlatformCISource(TEST_GITHUB_USER, TEST_PLATFORM_CI_BRANCH)
 
     def setUp(self):
         self.jenkins = MagicMock()
@@ -70,15 +71,13 @@ class CommitCITest(unittest.TestCase):
 
     def test_enable_when_not_exists(self):
         self.jenkins.job_exists.return_value = False
-        self.commitci.enable(CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CI_BRANCH,
-                             CommitCITest.TEST_GITHUB_USER)
+        self.commitci.enable(CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CODE_SOURCE)
         assert self.jenkins.job_exists.called
         assert self.jenkins.create_job.called
 
     def test_enable_when_exists(self):
         self.jenkins.job_exists.return_value = True
-        self.commitci.enable(CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CI_BRANCH,
-                             CommitCITest.TEST_GITHUB_USER)
+        self.commitci.enable(CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CODE_SOURCE)
         assert self.jenkins.job_exists.called
         assert not self.jenkins.create_job.called
         assert self.jenkins.update_job.called
@@ -87,8 +86,7 @@ class CommitCITest(unittest.TestCase):
     # pylint: disable=protected-access
     def test_enable(self):
         self.commitci._enable_job = MagicMock()
-        self.commitci.enable(CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CI_BRANCH,
-                             CommitCITest.TEST_GITHUB_USER)
+        self.commitci.enable(CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CODE_SOURCE)
 
         assert self.commitci._enable_job.called
         job = self.commitci._enable_job.call_args[0][0]
@@ -101,8 +99,7 @@ class CommitCITest(unittest.TestCase):
         self.commitci._run_on_targets = MagicMock()
 
         self.commitci._run_by_config(DistGitBranch(CommitCITest.TEST_BRANCH), CommitCITest.TEST_SLAVE,
-                                     CommitCITest.TEST_GITHUB_USER, CommitCITest.TEST_PLATFORM_CI_BRANCH,
-                                     CommitCITest.TEST_CONFIG_FILE)
+                                     CommitCITest.TEST_PLATFORM_CODE_SOURCE, CommitCITest.TEST_CONFIG_FILE)
         assert self.commitci._run_on_targets.called
         assert self.commitci._run_on_targets.call_args[0][0] == CommitCITest.TEST_BRANCH
         assert self.commitci._run_on_targets.call_args[0][1] == CommitCITest.TEST_TARGETS
@@ -111,8 +108,7 @@ class CommitCITest(unittest.TestCase):
         self.commitci._run_on_targets = MagicMock()
         staging = DistGitBranch(CommitCITest.TEST_STAGING_BRANCH)
 
-        self.commitci._run_on_staging(staging, CommitCITest.TEST_SLAVE, CommitCITest.TEST_GITHUB_USER,
-                                      CommitCITest.TEST_PLATFORM_CI_BRANCH)
+        self.commitci._run_on_staging(staging, CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CODE_SOURCE)
         assert self.commitci._run_on_targets.called
         assert self.commitci._run_on_targets.call_args[0][0] == CommitCITest.TEST_STAGING_BRANCH
         assert self.commitci._run_on_targets.call_args[0][1] == [CommitCITest.TEST_STAGING_TARGET]
@@ -124,8 +120,8 @@ class CommitCITest(unittest.TestCase):
         staging = DistGitBranch(CommitCITest.TEST_STAGING_BRANCH)
         self.commitci._run_on_targets = MagicMock()
 
-        self.commitci._run_on_staging(staging, CommitCITest.TEST_SLAVE, CommitCITest.TEST_GITHUB_USER,
-                                      CommitCITest.TEST_PLATFORM_CI_BRANCH, CommitCITest.TEST_CONFIG_FILE)
+        self.commitci._run_on_staging(staging, CommitCITest.TEST_SLAVE, CommitCITest.TEST_PLATFORM_CODE_SOURCE,
+                                      CommitCITest.TEST_CONFIG_FILE)
 
         assert self.commitci._run_on_targets.called
         assert self.commitci._run_on_targets.call_args[0][0] == CommitCITest.TEST_STAGING_BRANCH
@@ -135,4 +131,4 @@ class CommitCITest(unittest.TestCase):
     def test_run_on_staging_invalid(self):
         staging = DistGitBranch(CommitCITest.TEST_BRANCH)
         assert_raises(DistGitBranchException, self.commitci._run_on_staging, staging, CommitCITest.TEST_SLAVE,
-                      CommitCITest.TEST_GITHUB_USER, CommitCITest.TEST_PLATFORM_CI_BRANCH)
+                      CommitCITest.TEST_PLATFORM_CODE_SOURCE)

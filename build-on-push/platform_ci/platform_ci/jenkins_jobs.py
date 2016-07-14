@@ -33,12 +33,11 @@ class JobBuildOnCommit(object):
     there should be a single Worker job per DistGit branch, so it's build
     history represents a build-ability of that branch in history.
     """
-    def __init__(self, component, branch, slave, platform_ci_repo, platform_ci_branch):
+    def __init__(self, component, branch, slave, platform_ci_source):
         self.component = component
         self.branch = branch
         self.slave = slave
-        self.platform_ci_branch = platform_ci_branch
-        self.platform_ci_repo = platform_ci_repo
+        self.platform_ci_source = platform_ci_source
 
     @staticmethod
     def create_job_name(component, branch):
@@ -96,9 +95,9 @@ class JobBuildOnCommit(object):
         template = {"job-template": {"name": self.name, "defaults": "ci-workflow-brew-build"}}
         project = {"project": {"name": self.component, "component": self.component, "jobs": [self.name],
                                "git-branch": self.branch, "display-name": self.display_name, "team-slave": self.slave,
-                               "platform-ci-branch": self.platform_ci_branch, 'dispatcher-link': dispatcher_link,
+                               "platform-ci-branch": self.platform_ci_source.branch, 'dispatcher-link': dispatcher_link,
                                "platform-ci-project-link": platform_ci_project_link, "distgit-root-url": distgit_root,
-                               "github-user": self.platform_ci_repo}}
+                               "github-user": self.platform_ci_source.user}}
 
         return yaml.dump([template, project], default_flow_style=False)
 
@@ -111,18 +110,17 @@ class JobCommitDispatcher(object):
     the testing scratch-build should be automatically attempted. There should be
     a single dispatcher job per component.
     """
-    def __init__(self, component, slave=None, platform_ci_repo=None, platform_ci_branch=None):
+    def __init__(self, component, slave=None, platform_ci_source=None):
         self.component = component
         self.slave = slave
-        self.platform_ci_branch = platform_ci_branch
-        self.platform_ci_repo = platform_ci_repo
+        self.platform_ci_source = platform_ci_source
 
     @staticmethod
-    def create_description(branch, built_targets, jenkins_url, component):
+    def create_description(commit, built_targets, jenkins_url, component):
         """Creates a build description for the dispatcher job.
 
         Args:
-            branch: A name of the branch with the commits triggering the dispatcher
+            commit: A DistGitCommit that caused this dispatcher to run
             built_targets: A list of targets that were decided to build
             jenkins_url: The URL of the Jenkins master where the description will be viewed.
             component: A name of the component
@@ -130,15 +128,23 @@ class JobCommitDispatcher(object):
             A string with the HTML fragment suitable to be used as a Jenkins job build
                 description
         """
+        branch = commit.branch
         lines = ["<strong>Dist-git branch</strong>: {0.name} ({0.type} branch)".format(branch)]
 
+        if commit.hash:
+            lines.append("<strong>Commit:</strong> {0}".format(commit.hash))
+
         if not built_targets:
-            lines.append("No brew build was issued ({0.name} is not handled by CI)".format(branch))
+            lines.append("<strong>No brew build was issued</strong> ({0.name} is not handled by CI)".format(branch))
         else:
             trigger_job_template = '<strong>Triggered job: </strong><a href="{0}/job/{1}">Worker job for branch {2}</a>'
             worker_job_name = JobBuildOnCommit.create_job_name(component, branch.name)
             trigger_job_message = trigger_job_template.format(jenkins_url, worker_job_name, branch.name)
             lines.append(trigger_job_message)
+
+        if commit.description:
+            lines.append("<hr/><strong>Commit description:</strong>")
+            lines.extend(commit.description.split("\n"))
 
         return "<p>{0}</p>".format("<br>".join(lines))
 
@@ -183,9 +189,9 @@ class JobCommitDispatcher(object):
         template = {"job-template": {"name": self.name, "defaults": 'ci-dispatcher-commit'}}
         project = {"project": {"name": self.component, "component": self.component, "jobs": [self.name],
                                "display-name": self.display_name, "team-slave": self.slave,
-                               "platform-ci-branch": self.platform_ci_branch, "distgit-root-url": distgit_root,
+                               "platform-ci-branch": self.platform_ci_source.branch, "distgit-root-url": distgit_root,
                                "platform-ci-project-link": platform_ci_project_link,
                                "staging-branch-doc-link": staging_branch_doc_link,
-                               "github-user": self.platform_ci_repo}}
+                               "github-user": self.platform_ci_source.user}}
 
         return yaml.dump([template, project], default_flow_style=False)

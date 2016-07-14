@@ -19,8 +19,8 @@ import argparse
 import logging
 import os
 import subprocess
-from platform_ci.distgit import DistGitBranch
-from platform_ci.ci_types import CommitCI
+from platform_ci.distgit import DistGitCommit
+from platform_ci.ci_types import CommitCI, PlatformCISource
 from platform_ci.jenkins import PlatformJenkins
 from platform_ci.brew import BrewBuildAttempts, BuildToCommitterMapping
 import platform_ci.notifications as notifications
@@ -48,7 +48,8 @@ def enable(args):
     jenkins_url = os.environ["JENKINS_URL"]
 
     commit_ci = CommitCI(PlatformJenkins.get_jenkins(jenkins_url, args.templates), args.component)
-    commit_ci.enable(args.slave, args.platform_ci_repo, args.platform_ci_branch)
+    platform_ci_source = PlatformCISource(args.platform_ci_repo, args.platform_ci_branch)
+    commit_ci.enable(args.slave, platform_ci_source)
 
 
 def disable(args):
@@ -94,10 +95,12 @@ def run(args):
 
     logging.info("Building scratch build on branch [%s] of component [%s]", args.branch, args.component)
     jenkins_url = os.environ["JENKINS_URL"]
-    commit_ci = CommitCI(PlatformJenkins.get_jenkins(jenkins_url, args.templates), args.component)
 
-    branch = DistGitBranch(args.branch)
-    commit_ci.consider_build(branch, args.slave, args.platform_ci_repo, args.platform_ci_branch, args.config)
+    platform_ci_source = PlatformCISource(args.platform_ci_repo, args.platform_ci_branch)
+    commit = DistGitCommit(args.commit_hash, args.branch, args.commit_description)
+
+    commit_ci = CommitCI(PlatformJenkins.get_jenkins(jenkins_url, args.templates), args.component)
+    commit_ci.consider_build(commit, args.slave, platform_ci_source, args.config)
 
 
 def build(args):
@@ -195,7 +198,7 @@ def main():
     parser_enable.add_argument("templates", metavar="DIRECTORY")
     parser_enable.add_argument("slave", metavar="SLAVE")
     parser_enable.add_argument("platform_ci_repo", metavar="ACCOUNT", default="RHQE")
-    parser_enable.add_argument("platform_ci_branch", metavar="BRANCH")
+    parser_enable.add_argument("platform_ci_branch", metavar="BRANCH", default="master")
     parser_enable.set_defaults(func=enable)
 
     parser_disable = subparsers.add_parser("disable")
@@ -208,8 +211,10 @@ def main():
     parser_run.add_argument("templates")
     parser_run.add_argument("slave", metavar="SLAVE")
     parser_run.add_argument("platform_ci_repo", metavar="GITHUB_USER", default="RHQE")
-    parser_run.add_argument("platform_ci_branch", metavar="BRANCH")
+    parser_run.add_argument("platform_ci_branch", metavar="BRANCH", default="master")
     parser_run.add_argument("--config", dest="config", metavar="FILE", default=None)
+    parser_run.add_argument("--commit-hash", dest="commit_hash", default=None)
+    parser_run.add_argument("--commit-description", dest="commit_description", default=None)
     parser_run.set_defaults(func=run)
 
     parser_build = subparsers.add_parser("build")

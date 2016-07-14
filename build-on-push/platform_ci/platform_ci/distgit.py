@@ -21,6 +21,16 @@ class DistGitBranchException(notifications.PlatformCIException):
     header = notifications.create_platform_error_header(notifications.HEADERS["DIST_GIT"])
 
 
+class DistGitCommit(object):
+    """The class represents a commit in the DistGit repository."""
+
+    # pylint: disable=too-few-public-methods
+    def __init__(self, commit_hash, branch_name, description):
+        self.hash = commit_hash
+        self.branch = DistGitBranch(branch_name)
+        self.description = description
+
+
 class DistGitBranch(object):
     """The class represents a DistGit branch.
 

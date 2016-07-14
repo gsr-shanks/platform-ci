@@ -27,7 +27,7 @@ BOP_HOME="$PLATFORM_CI_HOME/build-on-push"
 
 . "$BOP_HOME/scripts/functions"
 
-log_header "Extracting git branch name"
+log_header "Extracting information about processed git commit"
 
 COMPONENT="$1"
 GIT_BRANCH="$2"
@@ -38,14 +38,19 @@ PLATFORM_CI_BRANCH="$4"
 
 [[ "$GIT_BRANCH" =~ ^origin/ ]] && SHORT_GIT_BRANCH=$( cut -c '8-' <<< "$GIT_BRANCH" )
 
+SHORT_GIT_COMMIT="$( git --git-dir "$COMPONENT/.git" rev-parse --short "$GIT_COMMIT" )"
+COMMIT_DESCRIPTION="$( git --git-dir "$COMPONENT/.git" log -1 )"
+COMMIT_DESCRIPTION_HTML="$( sed 's|\s*$|<br/>|' <<< "$COMMIT_DESCRIPTION")"
+
 echo "Branch name:            $GIT_BRANCH"
 echo "Short branch name:      $SHORT_GIT_BRANCH"
+echo "Short git commit:       $SHORT_GIT_COMMIT"
 echo "Job will run on slave:  $SLAVE"
 echo "Platform CI repo:       $PLATFORM_CI_REPO"
 echo "Platform CI branch:     $PLATFORM_CI_BRANCH"
 
-set_current_build_description "branch=$SHORT_GIT_BRANCH commit=$GIT_COMMIT"
-set_current_build_display_name "$SHORT_GIT_BRANCH:$GIT_COMMIT"
+set_current_build_description "branch=$SHORT_GIT_BRANCH commit=$SHORT_GIT_COMMIT<br/>$COMMIT_DESCRIPTION_HTML"
+set_current_build_display_name "$SHORT_GIT_BRANCH:$SHORT_GIT_COMMIT"
 
 log_header "Checking ci.yaml file"
 
@@ -61,4 +66,5 @@ fi
 log_header "Triggering build job"
 
 eval ci_commit run "$COMPONENT" "$SHORT_GIT_BRANCH" "platform-ci/build-on-push/jjb" "$SLAVE" "$PLATFORM_CI_REPO" \
-    "$PLATFORM_CI_BRANCH" "$CONFIG_FILE_PARAM"
+    "$PLATFORM_CI_BRANCH" "$CONFIG_FILE_PARAM" --commit-hash="$SHORT_GIT_COMMIT" \
+    --commit-description="$COMMIT_DESCRIPTION"

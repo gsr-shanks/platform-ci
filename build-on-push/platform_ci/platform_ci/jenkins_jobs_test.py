@@ -16,6 +16,7 @@ import unittest
 import yaml
 import os
 from .jenkins_jobs import JobBuildOnCommit, JobCommitDispatcher
+from .ci_types import PlatformCISource
 
 
 # pylint: disable=too-many-public-methods
@@ -27,8 +28,9 @@ class JobBuildOnCommitTest(unittest.TestCase):
         self.slave = "slave-name"
         self.platform_ci_branch = "test-branch"
         self.github_user = "QEOS"
+        self.platform_ci_source = PlatformCISource(self.github_user, self.platform_ci_branch)
 
-        self.job = JobBuildOnCommit(self.component, self.branch, self.slave, self.github_user, self.platform_ci_branch)
+        self.job = JobBuildOnCommit(self.component, self.branch, self.slave, self.platform_ci_source)
 
     def test_sanity(self):
         assert self.component == self.job.component
@@ -50,17 +52,15 @@ class JobCommitDispatcherTest(unittest.TestCase):
         self.component2 = "gcc"
         self.slave = "slave-name"
         self.platform_ci_branch = "test-branch"
-        self.github_user = "RHQE"
-        self.job_component1 = JobCommitDispatcher(self.component1, self.slave, self.github_user,
-                                                  self.platform_ci_branch)
-        self.job_component2 = JobCommitDispatcher(self.component2, self.slave, self.github_user,
-                                                  self.platform_ci_branch)
+        self.platform_ci_source = PlatformCISource("RHQE", self.platform_ci_branch)
+        self.job_component1 = JobCommitDispatcher(self.component1, self.slave, self.platform_ci_source)
+        self.job_component2 = JobCommitDispatcher(self.component2, self.slave, self.platform_ci_source)
 
     def test_slave(self):
         assert self.slave == self.job_component1.slave
 
     def test_platform_ci_branch(self):
-        assert self.platform_ci_branch == self.job_component1.platform_ci_branch
+        assert self.platform_ci_branch == self.job_component1.platform_ci_source.branch
 
     def test_name(self):
         assert "ci-{0}-dispatcher-commit".format(self.component1) == self.job_component1.name

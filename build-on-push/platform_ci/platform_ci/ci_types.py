@@ -26,6 +26,19 @@ import logging
 from .jenkins_jobs import JobCommitDispatcher, JobBuildOnCommit
 
 
+class PlatformCISource(object):
+    """This class represents a Platform CI code source.
+
+    Platform CI code source is a GitHub repository, defined by a user and
+    optionally by a branch."""
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, gh_user, branch="master"):
+        self.user = gh_user
+        self.branch = branch
+
+
 # pylint: disable=too-few-public-methods
 class PlatformCI(object):
     """Base class for further extension.
@@ -102,7 +115,7 @@ class CommitCI(PlatformCI):
     def __init__(self, jenkins, component):
         super(CommitCI, self).__init__(jenkins, component)
 
-    def enable(self, slave, platform_ci_repo, platform_ci_branch):
+    def enable(self, slave, platform_ci_source):
         """Enable Build-on-Push for a component.
 
         Implementation-wise, create or enable a dispatcher job for a given
@@ -110,10 +123,10 @@ class CommitCI(PlatformCI):
 
         Args:
             slave: A name of a Jenkins slave that will run the created jobs
-            platform_ci_branch: A branch of the Platform CI repository that
-                will be used as a source of support code in creaetd jobs.
+            platform_ci_source: A PlatformCISource instance describing desired
+                Platform CI code source.
         """
-        dispatcher = JobCommitDispatcher(self.component, slave, platform_ci_repo, platform_ci_branch)
+        dispatcher = JobCommitDispatcher(self.component, slave, platform_ci_source)
 
         self._enable_job(dispatcher)
 
@@ -123,7 +136,7 @@ class CommitCI(PlatformCI):
 
         self._disable_job(dispatcher)
 
-    def _run_on_targets(self, branch, targets, slave, platform_ci_repo, platform_ci_branch):
+    def _run_on_targets(self, branch, targets, slave, platform_ci_source):
         """Trigger a worker job building a dist-git branch in several targets.
 
         There is a single worker job per dist-git branch. If a worker job
@@ -134,17 +147,15 @@ class CommitCI(PlatformCI):
             branch: A dist-git branch name
             targets: A sequence of Brew target names
             slave: A slave name on which the worker job should be executed
-            platform_ci_repo: A GitHub account whose fork of Platform CI will
-                be fetched inside the worker job.
-            platform_ci_branch: A branch from the platform-ci repo from which
-                the code will be fetched inside the worker job.
+            platform_ci_source: A PlatformCISource instance describing the repo
+                from which the code will be fetched inside the worker job.
         """
 
-        worker = JobBuildOnCommit(self.component, branch, slave, platform_ci_repo, platform_ci_branch)
+        worker = JobBuildOnCommit(self.component, branch, slave, platform_ci_source)
         self._enable_job(worker)
         self.jenkins.trigger_job(worker, parameters={"BREW_TARGETS": " ".join(targets)})
 
-    def _run_on_staging(self, staging_branch, slave, platform_ci_repo, platform_ci_branch, config_file=None):
+    def _run_on_staging(self, staging_branch, slave, platform_ci_source, config_file=None):
         """Trigger a worker job building a staging branch in its associated Brew target.
 
         There is a single worker job per dist-git branch. If a worker job
@@ -157,8 +168,8 @@ class CommitCI(PlatformCI):
             staging_branch: A DistGitBranch instance representing a branch. It must
                 have a 'staging' or 'private staging' type.
             slave: A slave name on which the worker job should be executed
-            platform_ci_branch: A branch from the platform-ci repo from which
-                the code will be fetched inside the worker job.
+            platform_ci_source: A PlatformCISource instance describing the repo
+                from which the code will be fetched inside the worker job.
             config_file: A path to a config file inside a dist-git branch.
 
         Returns:
@@ -183,10 +194,10 @@ class CommitCI(PlatformCI):
         if staging_target not in targets:
             targets.append(staging_target)
 
-        self._run_on_targets(staging_branch.name, targets, slave, platform_ci_repo, platform_ci_branch)
+        self._run_on_targets(staging_branch.name, targets, slave, platform_ci_source)
         return targets
 
-    def _run_by_config(self, branch, slave, platform_ci_repo, platform_ci_branch, config_file):
+    def _run_by_config(self, branch, slave, platform_ci_source, config_file):
         """Trigger a worker job building a branch in targets specified in a config file.
 
         There is a single worker job per dist-git branch. If a worker job
@@ -196,8 +207,8 @@ class CommitCI(PlatformCI):
         Args:
             branch: A DistGitBranch instance representing a branch
             slave: A slave name on which the worker job should be executed
-            platform_ci_branch: A branch from the platform-ci repo from which
-                the code will be fetched inside the worker job.
+            platform_ci_source: A PlatformCISource instance describing the repo
+                from which the code will be fetched inside the worker job.
             config_file: A path to a config file inside a dist-git branch.
 
         Returns:
@@ -205,10 +216,10 @@ class CommitCI(PlatformCI):
         """
         config = CommitCIConfig(config_file)
         logging.info("Targets from config file: %s", config.targets)
-        self._run_on_targets(branch.name, config.targets, slave, platform_ci_repo, platform_ci_branch)
+        self._run_on_targets(branch.name, config.targets, slave, platform_ci_source)
         return config.targets
 
-    def consider_build(self, branch, slave, platform_ci_repo, platform_ci_branch, config):
+    def consider_build(self, commit, slave, platform_ci_source, config):
         """Trigger a worker job for a branch, depending on the branch type.
 
         Trigger a worker job either if branch is a staging branch or a private
@@ -217,22 +228,25 @@ class CommitCI(PlatformCI):
         is run inside a Jenkins job build, set a description of that build.
 
         Args:
-            branch: A DistGitBranch representing a branch
+            commit: A DistGitCommit representing a considered commit
             slave: A slave name on which the worker job should be executed
-            platform_ci_branch: A branch from the platform-ci repo from which
-                the code will be fetched inside the worker job.
+            platform_ci_source: A PlatformCISource instance describing the repo
+                from which the code will be fetched inside the worker job.
             config_file: A path to a config file inside a dist-git branch.
         """
+
+        branch = commit.branch
+
         if branch.is_staging():
             logging.info("Branch [%s] should be built: it is a staging branch", branch.name)
-            built_targets = self._run_on_staging(branch, slave, platform_ci_repo, platform_ci_branch, config)
+            built_targets = self._run_on_staging(branch, slave, platform_ci_source, config)
         elif config is not None:
             logging.info("Branch [%s] should be built: it contains a 'ci.yaml' file", branch.name)
-            built_targets = self._run_by_config(branch, slave, platform_ci_repo, platform_ci_branch, config)
+            built_targets = self._run_by_config(branch, slave, platform_ci_source, config)
         else:
             logging.warning("Branch [%s] is not a staging branch and 'ci.yaml' file was not found", branch.name)
             logging.warning("Branch [%s] should not be built", branch.name)
             built_targets = []
 
-        description = JobCommitDispatcher.create_description(branch, built_targets, self.jenkins.url, self.component)
+        description = JobCommitDispatcher.create_description(commit, built_targets, self.jenkins.url, self.component)
         self.jenkins.set_current_build_description(description)
