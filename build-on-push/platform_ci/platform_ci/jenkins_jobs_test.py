@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import unittest
-import yaml
 import os
+import yaml
 from .jenkins_jobs import JobBuildOnCommit, JobCommitDispatcher
 from .ci_types import PlatformCISource
 

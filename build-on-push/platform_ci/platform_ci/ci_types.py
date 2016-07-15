@@ -21,8 +21,8 @@ represent such CI functionality: they understand which jobs are needed,
 how to create or disable them and how to run their individual parts.
 """
 
-import yaml
 import logging
+import yaml
 from .jenkins_jobs import JobCommitDispatcher, JobBuildOnCommit
 
 

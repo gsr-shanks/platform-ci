@@ -71,13 +71,13 @@ class PlatformJenkinsJavaCLI(PlatformJenkins):
 
     VIEW_TEMPLATE = "view-template.xml"
 
-    LIST_JOBS = "list-jobs"
     DELETE_JOB = "delete-job"
     BUILD_JOB = "build"
     CREATE_JOB = "create-job"
     UPDATE_JOB = "update-job"
     ENABLE_JOB = "enable-job"
     DISABLE_JOB = "disable-job"
+    GET_JOB = "get-job"
 
     SET_DESCRIPTION = "set-build-description"
 
@@ -123,10 +123,11 @@ class PlatformJenkinsJavaCLI(PlatformJenkins):
 
     def job_exists(self, job):
         """Returns True if the given job exists."""
-        call = subprocess.Popen(self.cli + [PlatformJenkinsJavaCLI.LIST_JOBS], stdout=subprocess.PIPE)
-        out = call.communicate()[0]
-        out = out.split("\n")
-        return job.name in out or job.display_name in out
+
+        with open(os.devnull, 'w') as devnull:
+            result = subprocess.call(self.cli + [PlatformJenkinsJavaCLI.GET_JOB, job.name], stdout=devnull)
+
+        return result == 0
 
     def delete_job(self, job):
         """Deletes a given job from Jenkins."""

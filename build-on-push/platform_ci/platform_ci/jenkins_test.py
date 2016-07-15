@@ -21,9 +21,9 @@ from mock import MagicMock, patch
 # pylint: disable=no-name-in-module
 from nose.tools import assert_raises
 
-from .jenkins import PlatformJenkins
-from .jenkins_jobs import JobCommitDispatcher
 import platform_ci.jenkins
+
+from .jenkins_jobs import JobCommitDispatcher
 
 # pylint: disable=no-member
 try:
@@ -51,7 +51,7 @@ class PlatformJenkinsTest(unittest.TestCase):
         os.rmdir(self.template_dir)
 
     def get_jenkins_test(self):
-        jenkins = PlatformJenkins.get_jenkins(self.url, self.template_dir)
+        jenkins = platform_ci.jenkins.PlatformJenkins.get_jenkins(self.url, self.template_dir)
         assert jenkins.jenkins_server is None
         assert jenkins.template_dir == self.template_dir
         assert jenkins.url == self.url
@@ -118,22 +118,19 @@ class PlatformJenkinsJavaCLITest(unittest.TestCase):
         print command
         assert command == (self.jenkins.cli + [platform_ci.jenkins.PlatformJenkinsJavaCLI.CREATE_VIEW, "view"])
 
-    @patch('subprocess.Popen')
-    def job_exists_test(self, mock_popen):
-        mock_popen_instance = MagicMock()
-        mock_popen_instance.communicate = MagicMock()
-        mock_popen_instance.communicate.return_value = ["job1\njob2"]
-
-        mock_popen.return_value = mock_popen_instance
+    @patch('subprocess.call')
+    def job_exists_test(self, mock_call):
+        mock_call.return_value = 0
 
         self.job.name = "job1"
         assert self.jenkins.job_exists(self.job)
         self.job.name = "job3"
+        mock_call.return_value = 1
         assert not self.jenkins.job_exists(self.job)
 
-        assert mock_popen.called
-        command = mock_popen.call_args[0][0]
-        assert command == (self.jenkins.cli + [platform_ci.jenkins.PlatformJenkinsJavaCLI.LIST_JOBS])
+        assert mock_call.called
+        command = mock_call.call_args[0][0]
+        assert command == (self.jenkins.cli + [platform_ci.jenkins.PlatformJenkinsJavaCLI.GET_JOB, self.job.name])
 
     @patch('subprocess.call')
     def delete_job_test(self, mock_call):
