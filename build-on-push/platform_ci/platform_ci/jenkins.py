@@ -21,6 +21,7 @@ import os
 import subprocess
 import logging
 import platform_ci.jjb
+import platform_ci.config
 import platform_ci.notifications as notifications
 
 
@@ -85,8 +86,11 @@ class PlatformJenkinsJavaCLI(PlatformJenkins):
         super(PlatformJenkinsJavaCLI, self).__init__(None, template_dir)
         self.url = url
         self.cli = []
-        if "BOP_JENKINS_CLI" in os.environ:
-            self.cli.extend(os.environ["BOP_JENKINS_CLI"].split())
+
+        config = platform_ci.config.PlatformCIConfig()
+
+        if config.jenkins_cli_path:
+            self.cli.extend(config.jenkins_cli_path.split())
             self.cli.append("-noCertificateCheck")
         else:
             self.cli.extend(PlatformJenkinsJavaCLI.CLI)

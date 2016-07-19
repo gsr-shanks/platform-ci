@@ -14,10 +14,10 @@
 
 """This module contains representations of the individual Jenkins job "types"""
 
-import os
 import yaml
 
 import platform_ci.notifications as notifications
+import platform_ci.config
 
 
 # pylint: disable=too-few-public-methods
@@ -74,21 +74,19 @@ class JobBuildOnCommit(object):
         Jenkins Job Builder.
         """
 
-        # TODO: These settings should be centralized somewhere else
-        if "PLATFORM_CI_PROJECT" in os.environ:
-            platform_ci_project_link = '<a href="{0}">Platform CI Project</a>'.format(os.environ["PLATFORM_CI_PROJECT"])
+        config = platform_ci.config.PlatformCIConfig()
+
+        if config.project_url:
+            platform_ci_project_link = '<a href="{0}">Platform CI Project</a>'.format(config.project_url)
         else:
             platform_ci_project_link = "Platform CI Project"
 
-        if "BOP_DIST_GIT_URL" in os.environ:
-            distgit_root = os.environ["BOP_DIST_GIT_URL"]
-        else:
-            raise JenkinsJobError("BOP_DIST_GIT_URL not set: cannot create a commit worker job")
+        if not config.distgit_url:
+            raise JenkinsJobError("DistGit URL not set: cannot create a commit worker job")
 
-        if "JENKINS_URL" in os.environ:
+        if config.jenkins_url:
             dispatcher_name = JobCommitDispatcher.create_job_name(self.component)
-            dispatcher_link = '<a href="{0}/job/{1}">commit dispatcher</a>'.format(os.environ["JENKINS_URL"],
-                                                                                   dispatcher_name)
+            dispatcher_link = '<a href="{0}/job/{1}">commit dispatcher</a>'.format(config.jenkins_url, dispatcher_name)
         else:
             dispatcher_link = 'commit dispatcher'
 
@@ -96,8 +94,8 @@ class JobBuildOnCommit(object):
         project = {"project": {"name": self.component, "component": self.component, "jobs": [self.name],
                                "git-branch": self.branch, "display-name": self.display_name, "team-slave": self.slave,
                                "platform-ci-branch": self.platform_ci_source.branch, 'dispatcher-link': dispatcher_link,
-                               "platform-ci-project-link": platform_ci_project_link, "distgit-root-url": distgit_root,
-                               "github-user": self.platform_ci_source.user}}
+                               "platform-ci-project-link": platform_ci_project_link,
+                               "distgit-root-url": config.distgit_url, "github-user": self.platform_ci_source.user}}
 
         return yaml.dump([template, project], default_flow_style=False)
 
@@ -170,26 +168,27 @@ class JobCommitDispatcher(object):
         Jenkins Job Builder.
         """
 
+        config = platform_ci.config.PlatformCIConfig()
+
         # TODO: These settings should be centralized somewhere else
-        if "PLATFORM_CI_PROJECT" in os.environ:
-            platform_ci_project_link = '<a href="{0}">Platform CI Project</a>'.format(os.environ["PLATFORM_CI_PROJECT"])
+        if config.project_url:
+            platform_ci_project_link = '<a href="{0}">Platform CI Project</a>'.format(config.project_url)
         else:
             platform_ci_project_link = "Platform CI Project"
 
-        if "BOP_DIST_GIT_URL" in os.environ:
-            distgit_root = os.environ["BOP_DIST_GIT_URL"]
-        else:
-            raise JenkinsJobError("BOP_DIST_GIT_URL not set: cannot create a commit dispatcher job")
+        if not config.distgit_url:
+            raise JenkinsJobError("DistGit URL not set: cannot create a commit dispatcher job")
 
-        if "BOP_STAGING_BRANCH_DOC" in os.environ:
-            staging_branch_doc_link = '<a href="{0}">staging branch</a>'.format(os.environ["BOP_STAGING_BRANCH_DOC"])
+        if config.staging_branch_doc_url:
+            staging_branch_doc_link = '<a href="{0}">staging branch</a>'.format(config.staging_branch_doc_url)
         else:
             staging_branch_doc_link = "staging branch"
 
         template = {"job-template": {"name": self.name, "defaults": 'ci-dispatcher-commit'}}
         project = {"project": {"name": self.component, "component": self.component, "jobs": [self.name],
                                "display-name": self.display_name, "team-slave": self.slave,
-                               "platform-ci-branch": self.platform_ci_source.branch, "distgit-root-url": distgit_root,
+                               "platform-ci-branch": self.platform_ci_source.branch,
+                               "distgit-root-url": config.distgit_url,
                                "platform-ci-project-link": platform_ci_project_link,
                                "staging-branch-doc-link": staging_branch_doc_link,
                                "github-user": self.platform_ci_source.user}}

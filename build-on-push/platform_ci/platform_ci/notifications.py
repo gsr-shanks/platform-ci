@@ -30,6 +30,8 @@ import textwrap
 
 from string import Template
 
+import platform_ci.config
+
 HEADERS = {"GENERIC_CI": "An error has occurred and the desired action was not performed correctly. "
                          "Please contact the administrators of this CI instance.",
            "CONTACTS_CI": "An error has occurred and no tests were reliably executed. ",
@@ -61,13 +63,15 @@ def create_platform_error_header(header_title=HEADERS["CONTACTS_CI"]):
 
     call_to_action = "Please contact {admins} or file a bug{destination}."
 
-    if "PLATFORM_CI_ADMINS" in os.environ:
-        admins = "{0} ({1})".format(PLATFORM_CI_ADMINS, os.environ["PLATFORM_CI_ADMINS"])
+    config = platform_ci.config.PlatformCIConfig()
+
+    if config.admins:
+        admins = "{0} ({1})".format(PLATFORM_CI_ADMINS, config.admins)
     else:
         admins = PLATFORM_CI_ADMINS
 
-    if "PLATFORM_CI_BUG_DESTINATION" in os.environ:
-        destination = " at {0}".format(os.environ["PLATFORM_CI_BUG_DESTINATION"])
+    if config.bug_destination:
+        destination = " at {0}".format(config.bug_destination)
     else:
         destination = ""
 
@@ -125,8 +129,10 @@ $project_page
         else:
             self.debug = "unknown"
 
-        if "PLATFORM_CI_PROJECT" in os.environ:
-            self.project_page = "CI Project page: {0}".format(os.environ["PLATFORM_CI_PROJECT"])
+        config = platform_ci.config.PlatformCIConfig()
+
+        if config.project_url:
+            self.project_page = "CI Project page: {0}".format(config.project_url)
         else:
             self.project_page = ""
 
@@ -200,8 +206,10 @@ $project_page
         else:
             self.debug = "unknown"
 
-        if "PLATFORM_CI_PROJECT" in os.environ:
-            self.project_page = "CI Project page: {0}".format(os.environ["PLATFORM_CI_PROJECT"])
+        config = platform_ci.config.PlatformCIConfig()
+
+        if config.project_url:
+            self.project_page = "CI Project page: {0}".format(config.project_url)
         else:
             self.project_page = ""
 
