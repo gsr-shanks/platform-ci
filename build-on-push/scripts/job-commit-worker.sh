@@ -14,10 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+PLATFORM_CI_HOME=${PLATFORM_CI_HOME:-./platform-ci}
+BOP_HOME="$PLATFORM_CI_HOME/build-on-push"
+
 PROJECT="$1"
 BRANCH="$2"
 
-. platform-ci/scripts/functions
+
+. "$BOP_HOME/scripts/functions"
 
 rm -f "$WORKSPACE/notification-email.txt" "$WORKSPACE/addresses.txt"
 
