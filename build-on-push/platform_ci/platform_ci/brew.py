@@ -89,8 +89,8 @@ class BrewBuildAttempt(object):
         """
         logging.info("Building for target [%s]", self.target)
         self._logfile = open(self.logfile_path, "w")
-        self._execution = subprocess.Popen(["rhpkg", "build", "--scratch", "--skip-nvr-check", "--target", self.target,
-                                            "--arches", "x86_64"], stdout=self._logfile, stderr=self._logfile)
+        self._execution = subprocess.Popen(["rhpkg", "build", "--scratch", "--skip-nvr-check", "--target", self.target],
+                                           stdout=self._logfile, stderr=self._logfile)
 
     def wait(self):
         """Blocks until the build request is finished.
