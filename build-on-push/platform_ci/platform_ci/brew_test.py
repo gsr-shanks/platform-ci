@@ -54,7 +54,7 @@ class BrewBuildAttemptTest(unittest.TestCase):
         assert mock_open.call_args[0][0] == self.bba.logfile_path
         assert mock_popen.called
         assert mock_popen.call_args[0][0] == ["rhpkg", "build", "--scratch", "--skip-nvr-check", "--target",
-                                              BrewBuildAttemptTest.TEST_TARGET, "--arches", "x86_64"]
+                                              BrewBuildAttemptTest.TEST_TARGET]
 
     # pylint: disable=protected-access
     def wait_success_test(self):
