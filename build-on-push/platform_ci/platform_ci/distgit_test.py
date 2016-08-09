@@ -21,11 +21,11 @@ from platform_ci.distgit import DistGitBranch, DistGitBranchException
 
 
 class DistGitBranchTest(unittest.TestCase):
-    STAGING = {"branch": "staging-rhel-7", "target": "rhel-7-staging-candidate"}
+    STAGING = {"branch": "staging-rhel-7", "target": "staging-rhel-7-candidate"}
     PRIVATE = {"branch": "private-pmuller-branch", "target": None}
     STANDARD = {"branch": "rhel-7.2", "target": "rhel-7.2-candidate"}
     EXTRAS_STANDARD = {"branch": "extras-rhel-7.2", "target": "extras-rhel-7.2-candidate"}
-    EXTRAS_STAGING = {"branch": "staging-extras-rhel-7", "target": "extras-rhel-7-staging-candidate"}
+    EXTRAS_STAGING = {"branch": "staging-extras-rhel-7", "target": "staging-extras-rhel-7-candidate"}
 
     def setUp(self):
         self.staging_branch = DistGitBranch(DistGitBranchTest.STAGING["branch"])
@@ -77,7 +77,7 @@ class DistGitBranchTest(unittest.TestCase):
         ]
 
         testing_branches = ["staging-{0}".format(base) for base in testing_bases]
-        testing_targets = ["{0}-staging-candidate".format(base) for base in testing_bases]
+        testing_targets = ["staging-{0}-candidate".format(base) for base in testing_bases]
 
         for branch, target in zip(testing_branches, testing_targets):
             obj = DistGitBranch(branch)
@@ -91,13 +91,13 @@ class DistGitBranchTest(unittest.TestCase):
         Tests for parsing private staging branches for RHSCL and determining the correct build target
         """
         testing_data = [
-            ('private-johnfoo-staging-rhscl-2.1-rh-ruby22-rhel-6', 'rhscl-2.1-rh-ruby22-rhel-6-staging-candidate'),
+            ('private-johnfoo-staging-rhscl-2.1-rh-ruby22-rhel-6', 'staging-rhscl-2.1-rh-ruby22-rhel-6-candidate'),
             ('private-johnfoo-staging-rhscl-2.1-rh-ruby22-rhel-7-BZ123456',
-             'rhscl-2.1-rh-ruby22-rhel-7-staging-candidate'),
+             'staging-rhscl-2.1-rh-ruby22-rhel-7-candidate'),
             ('private-staging-rhscl-2.1-rh-mariadb100-rhel-6-BZ654321',
-             'rhscl-2.1-rh-mariadb100-rhel-6-staging-candidate'),
+             'staging-rhscl-2.1-rh-mariadb100-rhel-6-candidate'),
             ('private-jo-fo-staging-rhscl-2.1-rh-mariadb100-rhel-7-bar-baz',
-             'rhscl-2.1-rh-mariadb100-rhel-7-staging-candidate')
+             'staging-rhscl-2.1-rh-mariadb100-rhel-7-candidate')
         ]
 
         for branch, target in testing_data:
@@ -112,14 +112,14 @@ class DistGitBranchTest(unittest.TestCase):
         Tests for parsing private staging branches for RHEL components and determining the correct build target
         """
         testing_data = [
-            ('private-johnfoo-staging-rhel-7', 'rhel-7-staging-candidate'),
-            ('private-johnfoo-staging-rhel-7-BZ123456', 'rhel-7-staging-candidate'),
-            ('private-staging-rhel-6-BZ654321', 'rhel-6-staging-candidate'),
-            ('private-jo-fo-staging-rhel-6-bar-baz', 'rhel-6-staging-candidate'),
-            ('private-johnfoo-staging-extras-rhel-7', 'extras-rhel-7-staging-candidate'),
-            ('private-johnfoo-staging-extras-rhel-7-BZ123456', 'extras-rhel-7-staging-candidate'),
-            ('private-staging-extras-rhel-6-BZ654321', 'extras-rhel-6-staging-candidate'),
-            ('private-jo-fo-staging-extras-rhel-6-bar-baz', 'extras-rhel-6-staging-candidate'),
+            ('private-johnfoo-staging-rhel-7', 'staging-rhel-7-candidate'),
+            ('private-johnfoo-staging-rhel-7-BZ123456', 'staging-rhel-7-candidate'),
+            ('private-staging-rhel-6-BZ654321', 'staging-rhel-6-candidate'),
+            ('private-jo-fo-staging-rhel-6-bar-baz', 'staging-rhel-6-candidate'),
+            ('private-johnfoo-staging-extras-rhel-7', 'staging-extras-rhel-7-candidate'),
+            ('private-johnfoo-staging-extras-rhel-7-BZ123456', 'staging-extras-rhel-7-candidate'),
+            ('private-staging-extras-rhel-6-BZ654321', 'staging-extras-rhel-6-candidate'),
+            ('private-jo-fo-staging-extras-rhel-6-bar-baz', 'staging-extras-rhel-6-candidate'),
         ]
 
         for branch, target in testing_data:

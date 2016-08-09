@@ -69,7 +69,7 @@ class DistGitBranch(object):
 
         Returns: A name of the Brew target associated with the branch name
 
-        Example: DistGitBranch("staging-rhel-7").staging_target -> "rhel-7-staging-candidate"
+        Example: DistGitBranch("staging-rhel-7").staging_target -> "staging-rhel-7-candidate"
         """
         if self.is_staging():
             # Use just the staging branch name match
@@ -77,7 +77,7 @@ class DistGitBranch(object):
 
             # TODO: if the staging branch will be e.g. "rhel-6-staging", the target would be determined incorrectly
             # We would have to get the latest RHEL-6 target and use that.
-            return "{0}-staging-candidate".format(staging_branch_base)
+            return "staging-{0}-candidate".format(staging_branch_base)
         elif self.is_standard():
             # Use just the staging branch name match
             standard_branch_base = DistGitBranch.STANDARD_BRANCH_REGEXP.match(self.name).group('st_branch')
