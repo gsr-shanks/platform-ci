@@ -58,8 +58,8 @@ class CommitCITest(unittest.TestCase):
     TEST_TARGETS = ["test-1-target", "test-2-target"]
     TEST_BRANCH = "test-branch"
     TEST_CONFIG_FILE = "/file/to/path"
-    TEST_STAGING_BRANCH = "rhel-6.7-staging"
-    TEST_STAGING_TARGET = "rhel-6.7-candidate"
+    TEST_STAGING_BRANCH = "staging-rhel-6"
+    TEST_STAGING_TARGET = "staging-rhel-6-candidate"
     TEST_SLAVE = "team-slave"
     TEST_PLATFORM_CI_BRANCH = "test-branch"
     TEST_GITHUB_USER = "RHQE"

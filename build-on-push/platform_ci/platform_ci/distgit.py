@@ -43,10 +43,10 @@ class DistGitBranch(object):
     STANDARD_BRANCH_REGEXP_PATTERN = r'(?P<st_branch>((extras-)|(rhscl-\d\.\d-rh-\w+?-))?rhel-\d(\.\d)?)$'
 
     # Staging branch examples:
-    #   - Proper staging branches: rhel-7.3-staging, extras-rhel-7.2-staging
-    #   - Private staging branches: private-pmuller-rhel-7.3-staging-bz1234567
-    #                               private-pmuller-extras-rhel-7.2-staging
-    STAGING_BRANCH_REGEXP_PATTERN = r'(?P<st_branch>((extras-)|(rhscl-\d\.\d-rh-\w+?-))?rhel-\d(\.\d)?-staging)'
+    #   - Proper staging branches: staging-rhel-7, staging-extras-rhel-7
+    #   - Private staging branches: private-pmuller-staging-rhel-7-bz1234567
+    #                               private-pmuller-staging-extras-rhel-7
+    STAGING_BRANCH_REGEXP_PATTERN = r'staging-(?P<st_branch>((extras-)|(rhscl-\d\.\d-rh-\w+?-))?rhel-\d)'
 
     STANDARD_BRANCH_REGEXP = re.compile(STANDARD_BRANCH_REGEXP_PATTERN)
 
@@ -69,7 +69,7 @@ class DistGitBranch(object):
 
         Returns: A name of the Brew target associated with the branch name
 
-        Example: DistGitBranch("rhel-7.3-staging").staging_target -> "rhel-7.3-candidate"
+        Example: DistGitBranch("staging-rhel-7").staging_target -> "staging-rhel-7-candidate"
         """
         if self.is_staging():
             # Use just the staging branch name match
@@ -77,7 +77,7 @@ class DistGitBranch(object):
 
             # TODO: if the staging branch will be e.g. "rhel-6-staging", the target would be determined incorrectly
             # We would have to get the latest RHEL-6 target and use that.
-            return staging_branch_base.replace("staging", "candidate")
+            return "staging-{0}-candidate".format(staging_branch_base)
         elif self.is_standard():
             # Use just the staging branch name match
             standard_branch_base = DistGitBranch.STANDARD_BRANCH_REGEXP.match(self.name).group('st_branch')
@@ -101,8 +101,8 @@ class DistGitBranch(object):
 
         Examples:
             standard: rhel-6.8
-            staging: rhel-6.8-staging
-            private staging: private-<anything->rhel-6.8-staging<-anything>
+            staging: staging-rhel-6
+            private staging: private-<anything->staging-rhel-6<-anything>
             private: john-feature-branch-bz123321
 
         Returns:

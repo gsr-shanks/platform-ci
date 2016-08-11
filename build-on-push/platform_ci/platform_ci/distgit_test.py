@@ -17,20 +17,22 @@ import unittest
 # pylint: disable=no-name-in-module
 from nose.tools import assert_raises
 
-from .distgit import DistGitBranch, DistGitBranchException
+from platform_ci.distgit import DistGitBranch, DistGitBranchException
 
 
 class DistGitBranchTest(unittest.TestCase):
-    STAGING = {"branch": "rhel-7.1-staging", "target": "rhel-7.1-candidate"}
+    STAGING = {"branch": "staging-rhel-7", "target": "staging-rhel-7-candidate"}
     PRIVATE = {"branch": "private-pmuller-branch", "target": None}
-    STANDARD = {"branch": "extras-rhel-7.2", "target": "extras-rhel-7.2-candidate"}
-    EXTRAS_STAGING = {"branch": "extras-rhel-7.2-staging", "target": "extras-rhel-7.2-candidate"}
+    STANDARD = {"branch": "rhel-7.2", "target": "rhel-7.2-candidate"}
+    EXTRAS_STANDARD = {"branch": "extras-rhel-7.2", "target": "extras-rhel-7.2-candidate"}
+    EXTRAS_STAGING = {"branch": "staging-extras-rhel-7", "target": "staging-extras-rhel-7-candidate"}
 
     def setUp(self):
         self.staging_branch = DistGitBranch(DistGitBranchTest.STAGING["branch"])
         self.private_branch = DistGitBranch(DistGitBranchTest.PRIVATE["branch"])
         self.extras_staging_branch = DistGitBranch(DistGitBranchTest.EXTRAS_STAGING["branch"])
         self.standard_branch = DistGitBranch(DistGitBranchTest.STANDARD["branch"])
+        self.extras_standard_branch = DistGitBranch(DistGitBranchTest.EXTRAS_STANDARD["branch"])
 
     def extras_staging_branch_test(self):
         assert self.extras_staging_branch.name == DistGitBranchTest.EXTRAS_STAGING["branch"]
@@ -53,23 +55,29 @@ class DistGitBranchTest(unittest.TestCase):
     def standard_branch_test(self):
         assert self.standard_branch.name == DistGitBranchTest.STANDARD["branch"]
         assert not self.standard_branch.is_staging()
-        print self.standard_branch.staging_target
         assert self.standard_branch.staging_target == DistGitBranchTest.STANDARD["target"]
         assert self.standard_branch.type == "standard"
+
+    def extras_standard_branch_test(self):
+        assert self.extras_standard_branch.name == DistGitBranchTest.EXTRAS_STANDARD["branch"]
+        assert not self.extras_standard_branch.is_staging()
+        assert self.extras_standard_branch.staging_target == DistGitBranchTest.EXTRAS_STANDARD["target"]
+        assert self.extras_standard_branch.type == "standard"
 
     # pylint: disable=no-self-use
     def rhscl_staging_branch_test(self):
         """
         Tests for parsing staging branches for RHSCL and determining the correct build target
         """
-        testing_branches = [
-            'rhscl-2.1-rh-ruby22-rhel-6-staging',
-            'rhscl-2.1-rh-ruby22-rhel-7-staging',
-            'rhscl-2.1-rh-mariadb100-rhel-6-staging',
-            'rhscl-2.1-rh-mariadb100-rhel-7-staging'
+        testing_bases = [
+            'rhscl-2.1-rh-ruby22-rhel-6',
+            'rhscl-2.1-rh-ruby22-rhel-7',
+            'rhscl-2.1-rh-mariadb100-rhel-6',
+            'rhscl-2.1-rh-mariadb100-rhel-7'
         ]
 
-        testing_targets = [branch.replace('staging', 'candidate') for branch in testing_branches]
+        testing_branches = ["staging-{0}".format(base) for base in testing_bases]
+        testing_targets = ["staging-{0}-candidate".format(base) for base in testing_bases]
 
         for branch, target in zip(testing_branches, testing_targets):
             obj = DistGitBranch(branch)
@@ -83,10 +91,13 @@ class DistGitBranchTest(unittest.TestCase):
         Tests for parsing private staging branches for RHSCL and determining the correct build target
         """
         testing_data = [
-            ('private-johnfoo-rhscl-2.1-rh-ruby22-rhel-6-staging', 'rhscl-2.1-rh-ruby22-rhel-6-candidate'),
-            ('private-johnfoo-rhscl-2.1-rh-ruby22-rhel-7-staging-BZ123456', 'rhscl-2.1-rh-ruby22-rhel-7-candidate'),
-            ('private-rhscl-2.1-rh-mariadb100-rhel-6-staging-BZ654321', 'rhscl-2.1-rh-mariadb100-rhel-6-candidate'),
-            ('private-jo-fo-rhscl-2.1-rh-mariadb100-rhel-7-staging-bar-baz', 'rhscl-2.1-rh-mariadb100-rhel-7-candidate')
+            ('private-johnfoo-staging-rhscl-2.1-rh-ruby22-rhel-6', 'staging-rhscl-2.1-rh-ruby22-rhel-6-candidate'),
+            ('private-johnfoo-staging-rhscl-2.1-rh-ruby22-rhel-7-BZ123456',
+             'staging-rhscl-2.1-rh-ruby22-rhel-7-candidate'),
+            ('private-staging-rhscl-2.1-rh-mariadb100-rhel-6-BZ654321',
+             'staging-rhscl-2.1-rh-mariadb100-rhel-6-candidate'),
+            ('private-jo-fo-staging-rhscl-2.1-rh-mariadb100-rhel-7-bar-baz',
+             'staging-rhscl-2.1-rh-mariadb100-rhel-7-candidate')
         ]
 
         for branch, target in testing_data:
@@ -101,14 +112,14 @@ class DistGitBranchTest(unittest.TestCase):
         Tests for parsing private staging branches for RHEL components and determining the correct build target
         """
         testing_data = [
-            ('private-johnfoo-rhel-7.3-staging', 'rhel-7.3-candidate'),
-            ('private-johnfoo-rhel-7.3-staging-BZ123456', 'rhel-7.3-candidate'),
-            ('private-rhel-6.8-staging-BZ654321', 'rhel-6.8-candidate'),
-            ('private-jo-fo-rhel-6.8-staging-bar-baz', 'rhel-6.8-candidate'),
-            ('private-johnfoo-extras-rhel-7.3-staging', 'extras-rhel-7.3-candidate'),
-            ('private-johnfoo-extras-rhel-7.3-staging-BZ123456', 'extras-rhel-7.3-candidate'),
-            ('private-extras-rhel-6.8-staging-BZ654321', 'extras-rhel-6.8-candidate'),
-            ('private-jo-fo-extras-rhel-6.8-staging-bar-baz', 'extras-rhel-6.8-candidate'),
+            ('private-johnfoo-staging-rhel-7', 'staging-rhel-7-candidate'),
+            ('private-johnfoo-staging-rhel-7-BZ123456', 'staging-rhel-7-candidate'),
+            ('private-staging-rhel-6-BZ654321', 'staging-rhel-6-candidate'),
+            ('private-jo-fo-staging-rhel-6-bar-baz', 'staging-rhel-6-candidate'),
+            ('private-johnfoo-staging-extras-rhel-7', 'staging-extras-rhel-7-candidate'),
+            ('private-johnfoo-staging-extras-rhel-7-BZ123456', 'staging-extras-rhel-7-candidate'),
+            ('private-staging-extras-rhel-6-BZ654321', 'staging-extras-rhel-6-candidate'),
+            ('private-jo-fo-staging-extras-rhel-6-bar-baz', 'staging-extras-rhel-6-candidate'),
         ]
 
         for branch, target in testing_data:
