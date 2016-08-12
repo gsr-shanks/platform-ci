@@ -140,7 +140,7 @@
             artifacts: '*.log, *.txt'
             allow-empty: 'true'
         - email-ext:
-            recipients: $NOTIFICATION_RECIPENTS
+            recipients: $NOTIFICATION_RECIPIENTS
             reply-to: $DEFAULT_REPLYTO
             content-type: default
             subject: 'CI: $PROJECT_NAME #$BUILD_NUMBER ($BUILD_STATUS)'
