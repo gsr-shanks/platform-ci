@@ -146,7 +146,7 @@
             subject: 'CI: $PROJECT_NAME #$BUILD_NUMBER ($BUILD_STATUS)'
             body: ${{FILE,path="notification-email.txt"}}
             attach-build-log: false
-            always: false
+            always: true
             unstable: true
             first-failure: true
             not-built: true
