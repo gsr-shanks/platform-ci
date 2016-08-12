@@ -23,9 +23,9 @@ BRANCH="$2"
 
 . "$BOP_HOME/scripts/functions"
 
-rm -f "$WORKSPACE/notification-email.txt" "$WORKSPACE/addresses.txt"
+rm -f "$WORKSPACE/notification-email.txt"
 
-if ! ci_commit --report notification-email.txt build "$PROJECT" "$BRANCH" $BREW_TARGETS --committer-emails=addresses.txt
+if ! ci_commit --report notification-email.txt build "$PROJECT" "$BRANCH" $BREW_TARGETS --values-file="$WORKSPACE/VALUES.txt"
 then
 	exit 1
 fi

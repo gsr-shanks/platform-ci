@@ -131,6 +131,8 @@
             export PYTHONPATH="$PYTHONPATH:platform-ci/build-on-push/platform_ci"
 
             job-commit-worker.sh "{component}" "{git-branch}"
+        - inject:
+            properties-file: $WORKSPACE/VALUES.txt
     wrappers:
         - default-ci-workflow-wrappers
     publishers:
@@ -138,7 +140,7 @@
             artifacts: '*.log, *.txt'
             allow-empty: 'true'
         - email-ext:
-            recipients: '${{FILE,path="addresses.txt"}}'
+            recipients: $NOTIFICATION_RECIPENTS
             reply-to: $DEFAULT_REPLYTO
             content-type: default
             subject: 'CI: $PROJECT_NAME #$BUILD_NUMBER ($BUILD_STATUS)'
