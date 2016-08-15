@@ -30,7 +30,7 @@ import textwrap
 
 from string import Template
 
-import platform_ci.config
+import platform_ci.config as ci_config
 
 HEADERS = {"GENERIC_CI": "An error has occurred and the desired action was not performed correctly. "
                          "Please contact the administrators of this CI instance.",
@@ -63,15 +63,15 @@ def create_platform_error_header(header_title=HEADERS["CONTACTS_CI"]):
 
     call_to_action = "Please contact {admins} or file a bug{destination}."
 
-    config = platform_ci.config.PlatformCIConfig()
+    configuration = ci_config.PlatformCIConfig()
 
-    if config.admins:
-        admins = "{0} ({1})".format(PLATFORM_CI_ADMINS, config.admins)
+    if configuration.admins:
+        admins = "{0} ({1})".format(PLATFORM_CI_ADMINS, configuration.admins)
     else:
         admins = PLATFORM_CI_ADMINS
 
-    if config.bug_destination:
-        destination = " at {0}".format(config.bug_destination)
+    if configuration.bug_destination:
+        destination = " at {0}".format(configuration.bug_destination)
     else:
         destination = ""
 
@@ -129,7 +129,7 @@ $project_page
         else:
             self.debug = "unknown"
 
-        config = platform_ci.config.PlatformCIConfig()
+        config = ci_config.PlatformCIConfig()
 
         if config.project_url:
             self.project_page = "CI Project page: {0}".format(config.project_url)
@@ -206,7 +206,7 @@ $project_page
         else:
             self.debug = "unknown"
 
-        config = platform_ci.config.PlatformCIConfig()
+        config = ci_config.PlatformCIConfig()
 
         if config.project_url:
             self.project_page = "CI Project page: {0}".format(config.project_url)
