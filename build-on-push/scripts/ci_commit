@@ -112,6 +112,18 @@ def run(args):
     commit_ci.consider_build(commit, args.slave, platform_ci_source, config_file)
 
 
+def get_author():
+    command = ["git", "--no-pager", "show", "-s", "--format=%ce", "HEAD"]
+
+    git_commiter_query = subprocess.Popen(command, stdout=subprocess.PIPE)
+    git_commiter_query.wait()
+    if git_commiter_query.returncode != 0:
+        raise subprocess.CalledProcessError(git_commiter_query.returncode, command)
+
+    author = git_commiter_query.communicate()[0].strip()
+    return author
+
+
 def build(args):
     """Issue a scratch build request on a given branch.
 
@@ -130,26 +142,18 @@ def build(args):
         args.targets: A list of Brew targets for which builds will be attempted.
         args.report: A path to a file where the notification message body will
             be written.
+        args.values: An file-like object opened for writing, where KEY=VALUE
+            records will be written.
     """
     logging.info("Checking out branch %s of git repository %s", args.branch, args.component)
-
-    if args.addresses:
-        addresses_file = open(args.addresses, "w")
 
     cwd = os.getcwd()
     os.chdir(args.component)
 
     subprocess.check_call(["git", "branch", "--set-upstream", args.branch, "origin/{0}".format(args.branch)])
 
-    if args.addresses:
-        command = ["git", "--no-pager", "show", "-s", "--format=%ce", "HEAD"]
-        git_commiter_query = subprocess.Popen(command, stdout=subprocess.PIPE)
-        author = git_commiter_query.communicate()[0].strip()
-        git_commiter_query.wait()
-        if git_commiter_query.returncode != 0:
-            raise subprocess.CalledProcessError(git_commiter_query.returncode, command)
-        addresses_file.write(author)
-        addresses_file.close()
+    author = get_author()
+    args.values.write("NOTIFICATION_RECIPIENTS={0}".format(author))
 
     builds = BrewBuildAttempts(args.targets, cwd)
     builds.execute()
@@ -230,7 +234,8 @@ def main():
     parser_build.add_argument("component")
     parser_build.add_argument("branch")
     parser_build.add_argument("targets", nargs="+")
-    parser_build.add_argument("--committer-emails", dest="addresses", metavar="FILE", default=None)
+    parser_build.add_argument("--values-file", dest="values", metavar="FILE", type=argparse.FileType('w'),
+                              default="/dev/null")
     parser_build.set_defaults(func=build)
 
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
