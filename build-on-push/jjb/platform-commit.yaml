@@ -95,7 +95,7 @@
 
       <p>The build is issued via the following command:</p>
 
-      <p>$ rhpkg build --scratch --skip-nvr-check --target TARGET --arches x86_64</p>
+      <p>$ rhpkg build --scratch --skip-nvr-check --target TARGET</p>
 
       <p><strong>Triggers:</strong> nothing<br>
       <strong>Triggered by:</strong> {dispatcher-link}<br>
