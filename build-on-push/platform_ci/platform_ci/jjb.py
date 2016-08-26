@@ -48,7 +48,9 @@ class JJB(object):
 
     def __enter__(self):
         for item in os.listdir(self.template_dir):
-            shutil.copy(os.path.join(self.template_dir, item), self.workdir)
+            source_path = os.path.join(self.template_dir, item)
+            if os.path.isfile(source_path):
+                shutil.copy(source_path, self.workdir)
 
         return self
 
