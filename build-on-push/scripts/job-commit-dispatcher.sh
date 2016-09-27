@@ -49,8 +49,8 @@ echo "Job will run on slave:  $SLAVE"
 echo "Platform CI repo:       $PLATFORM_CI_REPO"
 echo "Platform CI branch:     $PLATFORM_CI_BRANCH"
 
-# set_current_build_description "branch=$SHORT_GIT_BRANCH commit=$SHORT_GIT_COMMIT<br/>$COMMIT_DESCRIPTION_HTML"
-# set_current_build_display_name "$SHORT_GIT_BRANCH:$SHORT_GIT_COMMIT"
+set_current_build_description "branch=$SHORT_GIT_BRANCH commit=$SHORT_GIT_COMMIT<br/>$COMMIT_DESCRIPTION_HTML"
+set_current_build_display_name "$SHORT_GIT_BRANCH:$SHORT_GIT_COMMIT"
 
 log_header "Triggering build job"
 
