@@ -249,4 +249,4 @@ class CommitCI(PlatformCI):
             built_targets = []
 
         description = JobCommitDispatcher.create_description(commit, built_targets, self.jenkins.url, self.component)
-        self.jenkins.set_current_build_description(description)
+        # self.jenkins.set_current_build_description(description)
